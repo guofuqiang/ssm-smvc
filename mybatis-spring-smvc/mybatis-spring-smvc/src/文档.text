@@ -1,0 +1,9 @@
+<1>在web.xml中配置spring容器的监听器ContextLoaderListener和springmvc的dispatchservlet alter+/生成
+<2>配置对应的spring配置文件和springDispatcherServlet对应的springmvc配置文件
+  ①在生成dispatchservlet的时候若果有
+  <init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath*:mybatis/spring-mvc.xml</param-value>
+		</init-param>
+		
+		这个写法  是配置

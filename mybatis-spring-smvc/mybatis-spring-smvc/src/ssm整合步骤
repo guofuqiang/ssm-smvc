@@ -1,0 +1,78 @@
+mybatis集成spring的jar包下载地址
+	https://github.com/mybatis/spring/releases
+
+1,在项目入口配置文件web.xml中配置spring容器的监听器contextLoaderListener(创建spring应用上下文，管理容器中的bean...)，
+快捷方式  (Alter + \)自动生成 (需要你上翻页，找到对应的#contextLoaderListener和#dispatherservlet) 
+和springmvc的dispatchservlet(创建servlet上下文，过滤所有的请求...)
+
+2,配置contextLoaderListener对应的spring配置文件和dispatchservlet对应的springmvc配置文件
+	① 在生成dispatchservlet的时候，如果有
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			//classpath 对应着Source Folder源文件夹里的文件
+			<param-value>classpath:smvc-servlet.xml</param-value>
+		</init-param>
+		则可以直接指定springmvc配置文件的位置 以及名称 。
+	② 如果没有<init-param> 则默认在<WEB-INF>找对应的<servlet-name>${servletName}</servlet-name>
+		servletName-servlet.xml配置文件
+
+	1)配置springmvc的配置文件
+		首先，配置springmvc的视图解析器
+			<bean id="view" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+				<property name="prefix" value="/WEB-INF/views/"></property>
+				<property name="suffix" value=".jsp"></property>
+			</bean>
+		然后，配置springmvc扫描的组件，及controller
+			<context:component-scan base-package="com.mybatis.demo" use-default-filters="false">
+				<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+			</context:component-scan>
+		最后，启用注解驱动，以及静态资源处理的servlet
+			<mvc:annotation-driven/>
+			<mvc:default-servlet-handler/>
+	 2)配置spring的配置文件
+	 	首先，引用外部数据源配置文件，配置C3P0数据源(ComboPooledDataSource)
+	 		<context:property-placeholder location="classpath:db.properties"/>
+			<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+				<property name="user" value="${jdbc.user}"></property>
+				<property name="password" value="${jdbc.password}"></property>
+				<property name="driverClass" value="${jdbc.driver}"></property>
+				<property name="jdbcUrl" value="${jdbc.url}"></property>
+			</bean>
+		然后，配置spring扫描的组件，以及事务管理器
+			<!-- spring扫描的组件--!>
+			<context:component-scan base-package="com.mybatis.demo">
+				<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+			</context:component-scan>
+			
+			<!--配置事务管理器--!>
+			<bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+				<property name="dataSource" ref="dataSource"></property>
+			</bean>
+			<tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+		最后，整合mybatis，参考mybatis官网文档（https://github.com/mybatis/jpetstore-6/blob/master/src/main/webapp/WEB-INF/applicationContext.xml）
+			①，mybatis的SqlSessionFactory交由spring管理（默认单例模式，在整个容器中，只产生一个实例）
+				<!-- 整合mybatis  mapper由spring管理-->
+				
+				<!--
+					SqlSessionFactoryBean由mybatis提供，用于产生mybatis的SqlSessionFactory，
+					需要配置属性有：数据源，mybatis的配置文件，以及mapper配置文件
+				-->
+				<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+					<property name="dataSource" ref="dataSource"></property>
+					<property name="configLocation" value="classpath:mybatis.xml"></property>
+					<property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"></property>	
+				</bean>
+			②，扫描Mapper的所有的接口，交由spring容器自动装配
+				<mybatis-spring:scan base-package="com.mybatis.demo.dao"/>	
+
+3，配置mybatis的配置文件
+	在mybatis文件中，配置一些全局信息等
+
+
+
+			
+	
+	
+			
+	
+	
